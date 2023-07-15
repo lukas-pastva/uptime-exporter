@@ -18,7 +18,8 @@ jobs:
 
       - name: build
         run: |
-          #VERSION=$(git describe | awk -F '-' '{print $1}')
+          VERSION=$(git describe | awk -F '-' '{print $1}')
+          echo "VERSION: $VERSION"
           VERSION="0.1.1"
           docker login registry.hub.docker.com -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
           docker build -f ./source-code/Dockerfile -t registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest .
