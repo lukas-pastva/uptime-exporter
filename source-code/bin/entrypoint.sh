@@ -10,9 +10,6 @@ echo "|       ||   |      |   |  |   | | ||_|| ||   |___   |   |___ |   _   ||  
 echo "|_______||___|      |___|  |___| |_|   |_||_______|  |_______||__| |__||___|    |_______||___|  |_|  |___|  |_______||___|  |_|"
 echo ""
 
-GW_URL=$(yq e ".uptime-exporter-config.prometheus_pushgateway" /home/uptime-exporter-config.yaml)
-if [ -z "$GW_URL" ]; then
-  /usr/local/bin/uptime-exporter
-fi
+/usr/local/bin/uptime-exporter
 
 service cron start & tail -f /var/log/cron.log

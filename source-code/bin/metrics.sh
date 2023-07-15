@@ -85,4 +85,4 @@ for JOB in $JOBS; do
 done
 
 rm /tmp/metrics.log || true
-echo -e $METRICS > /tmp/metrics.log
+echo -e "$METRICS" > /tmp/metrics.log

@@ -2,45 +2,27 @@ package main
 
 import (
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
-	"os"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	filePath := "/tmp/metrics.log"
-
-	// Check if file exists
-	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			fmt.Println("File does not exist.")
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Read the contents of the file
+		contents, err := ioutil.ReadFile("/tmp/metrics.log")
+		if err != nil {
+			// If there is an error reading the file, write an error message and return
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "Error reading file: ", err)
 			return
 		}
+
+		// Write the contents of the file to the response
+		fmt.Fprint(w, string(contents))
+	})
+
+	fmt.Println("Server is listening on port 80...")
+	if err := http.ListenAndServe(":80", nil); err != nil {
+		fmt.Println("Server failed to start:", err)
 	}
-
-	// Open file
-	file, err := os.Open(filePath)
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
-	}
-	defer file.Close()
-
-	// Echo contents of the file
-	_, err = io.Copy(os.Stdout, file)
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-	}
-
-	//cmd, err := exec.Command("/bin/sh", "/usr/local/bin/metrics.sh").Output()
-	//if err != nil {
-	//	fmt.Printf("error %s", err)
-	//}
-	//output := string(cmd)
-	//fmt.Fprintf(w, output)
-}
-
-func main() {
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":80", nil)
 }
