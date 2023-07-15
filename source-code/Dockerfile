@@ -1,8 +1,8 @@
 FROM golang:1.16-buster AS builder
 WORKDIR /app
-COPY ./source-code/uptime-exporter/go.* ./
+COPY ./source-code/go.* ./
 RUN go mod download
-COPY ./source-code/uptime-exporter/*.go ./
+COPY ./source-code/*.go ./
 RUN go build -o /uptime-exporter
 FROM debian:bullseye-slim
 
