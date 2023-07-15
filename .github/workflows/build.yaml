@@ -1,4 +1,4 @@
-name: build-uptime-exporter
+name: build
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-uptime-exporter:
+  build:
     runs-on: ubuntu-latest
 
     steps:
