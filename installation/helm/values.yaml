@@ -1,0 +1,18 @@
+name: sys-uptime-exporter
+namespace: sys-uptime-exporter
+type: DaemonSet
+
+pods:
+  - name: sys-uptime-exporter
+    repo: lukaspastva/uptime-exporter:latest
+    resources: 100
+    ports:
+      - name: http
+        port: 80
+    serviceMonitorEnabled: true
+    env:
+      - name: PROMETHEUS_URL
+        valueFrom:
+          secretKeyRef:
+            name: prometheus-url
+            key: PROMETHEUS_URL

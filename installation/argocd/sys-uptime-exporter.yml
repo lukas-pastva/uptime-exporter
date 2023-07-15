@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sys-uptime-exporter
+  namespace: sys-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://lukas-pastva.github.io/helm-chartie/
+      targetRevision: 0.1.48
+    chart: helm-chartie
+    helm:
+      values: |-
+        namespace: sys-uptime-exporter
+        type: DaemonSet
+        
+        pods:
+          - name: sys-uptime-exporter
+            repo: lukaspastva/uptime-exporter:latest
+            resources: 100
+            ports:
+              - name: http
+                port: 80
+            serviceMonitorEnabled: true
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: sys-uptime-exporter
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

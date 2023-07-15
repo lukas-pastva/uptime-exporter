@@ -1,0 +1,26 @@
+name: build-uptime-exporter
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-uptime-exporter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: build
+        run: |
+          VERSION=$(git describe | awk -F '-' '{print $1}')
+          docker login registry.hub.docker.com -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          docker build -f ./source-code/Dockerfile -t registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest .
+          docker tag registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${VERSION}
+          docker push registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest
+          docker push registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${VERSION}
