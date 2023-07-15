@@ -37,6 +37,7 @@ EXPOSE 80
 USER root
 
 RUN mkdir -p /var/log && touch /var/log/cron.log
-RUN (crontab -l ; echo "*/5 * * * * /usr/local/bin/metrics.sh >/dev/null") | crontab
+RUN (crontab -l ; echo "*/5 * * * * /usr/local/bin/metrics.sh") | crontab
+RUN echo "uptime_exporter_heart_beat $(date +%s)" > /tmp/metrics.log
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
