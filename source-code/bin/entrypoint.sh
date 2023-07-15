@@ -10,6 +10,6 @@ echo "|       ||   |      |   |  |   | | ||_|| ||   |___   |   |___ |   _   ||  
 echo "|_______||___|      |___|  |___| |_|   |_||_______|  |_______||__| |__||___|    |_______||___|  |_|  |___|  |_______||___|  |_|"
 echo ""
 
-/usr/local/bin/uptime-exporter
+/usr/local/bin/uptime-exporter &
 
 service cron start & tail -f /var/log/cron.log
