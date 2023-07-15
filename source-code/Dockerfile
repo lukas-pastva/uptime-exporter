@@ -30,7 +30,7 @@ RUN apt-get update -qq && \
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
 
 COPY --from=builder /uptime-exporter /usr/local/bin/uptime-exporter
-COPY ./source-code/uptime-exporter/bin /usr/local/bin
+COPY ./source-code/bin /usr/local/bin
 RUN chmod -R +x /usr/local/bin
 
 EXPOSE 80
