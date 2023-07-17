@@ -25,6 +25,11 @@ spec:
               - name: http
                 port: 80
             serviceMonitorEnabled: true
+            envs:
+              - name: PROMETHEUS_URL
+                value: "prometheus-operated.monitoring:9090"
+              - name: NAMESPACE
+                value: "my-app"
 
   destination:
     server: "https://kubernetes.default.svc"

@@ -8,11 +8,8 @@ METRIC="uptime_exporter_heart_beat ${EPOCH}"
 METRICS=$(echo -e "$METRICS\n$METRIC")
 
 # iterate over Prometheus jobs
-JOBS=$(curl -s "$PROMETHEUS_URL/api/v1/label/job/values" | jq -r '.data[]')
-for JOB in $JOBS; do
-
-  #curl -G "$PROMETHEUS_URL/api/v1/query_range" --data-urlencode "query=sum(sum_over_time(up{job=\"sys-uptime-exporter\"}[3600s])) / sum(count_over_time(up{job=\"sys-uptime-exporter\"}[3600s]))" --data-urlencode "start=$start_time" --data-urlencode "end=$end_time" --data-urlencode "step=60" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100'
-  #curl -G "$PROMETHEUS_URL/api/v1/query_range" --data-urlencode "query=sum(sum_over_time(up{job=\"sys-uptime-exporter\"}[3600s])) / sum(count_over_time(up{job=\"sys-uptime-exporter\"}[3600s]))" --data-urlencode "start=1689437496.2288918" --data-urlencode "end=1689447315.9632373" --data-urlencode "step=60" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100'
+DEPLOYMENTS=$(curl -G "http://prometheus-operated.monitoring:9090/api/v1/query" --data-urlencode 'query=kube_deployment_status_replicas_updated' | jq -r '.data.result[] | select(.metric.namespace=="iata-intg") | .metric.deployment')
+for DEPLOYMENT in $DEPLOYMENTS; do
 
   # PER last XXX
   # uptime per last 24 hours
@@ -21,9 +18,9 @@ for JOB in $JOBS; do
     end_time=$(date -d "-$i hours" +%s)
     start_time=$((end_time-60))
     step="3600"
-    # UPTIME=$(curl -s -G --data-urlencode "query=(avg(avg_over_time(up{job=\"${JOB}\"}[$step]) or on() vector(0) )*100)" --data-urlencode "start=$start_time" --data-urlencode "end=$end_time" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query" | jq -r '.data.result[]?.value[1]')
-    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"hour-$i\",prometheus_job=\"${JOB}\"} ${UPTIME}"
+    # UPTIME=$(curl -s -G --data-urlencode "query=(avg(avg_over_time(up{job=\"${DEPLOYMENT}\"}[$step]) or on() vector(0) )*100)" --data-urlencode "start=$start_time" --data-urlencode "end=$end_time" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query" | jq -r '.data.result[]?.value[1]')
+    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"hour-$i\",prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -34,9 +31,9 @@ for JOB in $JOBS; do
     end_time=$(date -d"$i day ago $(date +%T)" +%s)
     start_time=$((end_time-60))
     step=$((3600*24))
-    # UPTIME=$(curl -s -G --data-urlencode "query=(avg(avg_over_time(up{job=\"${JOB}\"}[$step]) or on() vector(0) )*100)" --data-urlencode "start=$start_time" --data-urlencode "end=$end_time" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query" | jq -r '.data.result[]?.value[1]')
-    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"day-$((10-$i))\",prometheus_job=\"${JOB}\"} ${UPTIME}"
+    # UPTIME=$(curl -s -G --data-urlencode "query=(avg(avg_over_time(up{job=\"${DEPLOYMENT}\"}[$step]) or on() vector(0) )*100)" --data-urlencode "start=$start_time" --data-urlencode "end=$end_time" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query" | jq -r '.data.result[]?.value[1]')
+    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"day-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -46,8 +43,8 @@ for JOB in $JOBS; do
     end_time=$(date -d"$i week ago $(date +%T)" +%s)
     start_time=$((end_time-60))
     step=$((3600*24*7))
-    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    METRIC="uptime_exporter_per_last_10_weeks{week_in_past=\"week-$((10-$i))\",prometheus_job=\"${JOB}\"} ${UPTIME}"
+    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+    METRIC="uptime_exporter_per_last_10_weeks{week_in_past=\"week-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -57,8 +54,8 @@ for JOB in $JOBS; do
     end_time=$(date -d"$i month ago $(date +%T)" +%s)
     start_time=$((end_time-60))
     step=$((3600*24*30))
-    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    METRIC="uptime_exporter_per_last_12_months{month_in_past=\"month-$((12-$i))\",prometheus_job=\"${JOB}\"} ${UPTIME}"
+    UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+    METRIC="uptime_exporter_per_last_12_months{month_in_past=\"month-$((12-$i))\",prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -69,8 +66,8 @@ for JOB in $JOBS; do
   end_time=$(date -u +%s)
   start_time=$((end_time-60))
   step=$((3600*24*30))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_last_7_days{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_last_7_days{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in last 30 days
@@ -78,8 +75,8 @@ for JOB in $JOBS; do
   end_time=$(date -u +%s)
   start_time=$((end_time-60))
   step=$((3600*24*30))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_last_30_days{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_last_30_days{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in previous month
@@ -87,8 +84,8 @@ for JOB in $JOBS; do
   end_time=$(date -d "$(date +%Y-%m-01) -1 second" +%s)
   start_time=$((end_time-60))
   step=$((3600*24*30))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_previous_month{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_previous_month{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in three months ago
@@ -96,8 +93,8 @@ for JOB in $JOBS; do
   end_time=$(date -u +%s)
   start_time=$((end_time-60))
   step=$((3600*24*90))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_three_months_ago{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_three_months_ago{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in this year
@@ -105,8 +102,8 @@ for JOB in $JOBS; do
   end_time=$(date -u +%s)
   start_time=$((end_time-60))
   step=$((3600*24*$(date +%j)))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_this_year{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_this_year{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in one year ago
@@ -114,8 +111,8 @@ for JOB in $JOBS; do
   end_time=$(date -u +%s)
   start_time=$((end_time-60))
   step=$((3600*24*365))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_one_year_ago{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_one_year_ago{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in two years ago
@@ -123,8 +120,8 @@ for JOB in $JOBS; do
   end_time=$(date -d "1 year ago" +%s)
   start_time=$((end_time-60))
   step=$((3600*24*365))
-  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(up{job=\"$JOB\"}[3600s])) / sum(count_over_time(up{job=\"$JOB\"}[3600s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-  METRIC="uptime_exporter_in_two_years_ago{prometheus_job=\"${JOB}\"} ${UPTIME}"
+  UPTIME=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$start_time.2288918" --data-urlencode "end=$end_time.2288918" --data-urlencode "step=$step" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  METRIC="uptime_exporter_in_two_years_ago{prometheus_job=\"${DEPLOYMENT}\"} ${UPTIME}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
 done
