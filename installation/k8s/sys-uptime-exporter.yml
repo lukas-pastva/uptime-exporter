@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uptime-exporter
+  namespace: sys-monitoring
+spec:
+  containers:
+    - name: uptime-exporter
+      image: lukaspastva/uptime-exporter:latest
+      env:
+        - name: CONFIG_FILE
+          value: |
+            config:
+              prometheus_url: "http://prometheus-operated.monitoring:9090"
+              namespace: "my-app"
+              uptimes:
+                - start: 123456
+                  duration: 1600
+                - start: 1234567
+                  duration: 1600

@@ -10,6 +10,15 @@ echo "|       ||   |      |   |  |   | | ||_|| ||   |___   |   |___ |   _   ||  
 echo "|_______||___|      |___|  |___| |_|   |_||_______|  |_______||__| |__||___|    |_______||___|  |_|  |___|  |_______||___|  |_|"
 echo ""
 
+# in case config is via variable
+if [ "${CONFIG_FILE}" != "" ]; then
+    echo "${CONFIG_FILE}" > /home/config.yaml
+    export CONFIG_FILE=""
+fi
+
+export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
+export NAMESPACE=$(yq e '.config.namespace' /home/config.yaml)
+
 /usr/local/bin/uptime-exporter &
 
 service cron start & tail -f /var/log/cron.log
