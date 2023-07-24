@@ -8,7 +8,7 @@ METRIC="uptime_exporter_heart_beat ${EPOCH}"
 METRICS=$(echo -e "$METRICS\n$METRIC")
 
 # iterate over Prometheus jobs
-DEPLOYMENTS=$(curl -G "$PROMETHEUS_URL/api/v1/query" --data-urlencode 'query=kube_deployment_status_replicas_updated' | jq -r '.data.result[] | select(.metric.namespace=="iata-intg") | .metric.deployment')
+DEPLOYMENTS=$(curl -G "$PROMETHEUS_URL/api/v1/query" --data-urlencode 'query=kube_deployment_status_replicas_updated' | jq -r ".data.result[] | select(.metric.namespace=="$NAMESPACE") | .metric.deployment")
 for DEPLOYMENT in $DEPLOYMENTS; do
 
   # PER last XXX
