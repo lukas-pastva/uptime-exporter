@@ -13,25 +13,25 @@ for DEPLOYMENT in $DEPLOYMENTS; do
 
   # PER last XXX
   # uptime per last 24 hours
-  for i in {0..24}; do
-    END_TIME=$(date -d "-$i hours" +%s)
-    step="3600"
-    UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"hour-$i\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
-    METRICS=$(echo -e "$METRICS\n$METRIC")
-  done
+  #  for i in {0..24}; do
+  #    END_TIME=$(date -d "-$i hours" +%s)
+  #    step=3600
+  #    UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  #    DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
+  #    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"hour-$i\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  #    METRICS=$(echo -e "$METRICS\n$METRIC")
+  #  done
 
   # PER last XXX
   # uptime per last 10 days
-  for i in {0..9}; do
-    END_TIME=$(date -d"$i day ago $(date +%T)" +%s)
-    step=$((3600*24))
-    UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
-    DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"day-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
-    METRICS=$(echo -e "$METRICS\n$METRIC")
-  done
+  #  for i in {0..9}; do
+  #    END_TIME=$(date -d"$i day ago $(date +%T)" +%s)
+  #    step=$((3600*24))
+  #    UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+  #    DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
+  #    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"day-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  #    METRICS=$(echo -e "$METRICS\n$METRIC")
+  #  done
 
   # uptime per last 10 weeks
   for i in {0..9}; do

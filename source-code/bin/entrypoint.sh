@@ -16,9 +16,6 @@ if [ "${CONFIG_FILE}" != "" ]; then
     export CONFIG_FILE=""
 fi
 
-export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
-export NAMESPACE=$(yq e '.config.namespace' /home/config.yaml)
-
 /usr/local/bin/uptime-exporter &
 
 service cron start & tail -f /var/log/cron.log

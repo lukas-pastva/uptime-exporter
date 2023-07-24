@@ -26,10 +26,16 @@ spec:
                 port: 80
             serviceMonitorEnabled: true
             envs:
-              - name: PROMETHEUS_URL
-                value: "prometheus-operated.monitoring:9090"
-              - name: NAMESPACE
-                value: "my-app"
+              - name: CONFIG_FILE
+                value: |
+                  config:
+                    prometheus_url: "http://prometheus-operated.monitoring:9090"
+                    namespace: "my-app"
+                    uptimes:
+                      - start: 123456
+                        duration: 1600
+                      - start: 1234567
+                        duration: 1600
 
   destination:
     server: "https://kubernetes.default.svc"

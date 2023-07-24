@@ -20,6 +20,5 @@ calculate_downtime_seconds_from_percentage() {
     echo "${DOWNTIME_SECONDS}"
 }
 
-export EPOCH=$(date +%s)
-export DATE=$(date +"%Y-%m-%dT%H-%M-%SZ")
-export ANTI_DATE=$(( 10000000000 - $(date +%s) ))
+export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
+export NAMESPACE=$(yq e '.config.namespace' /home/config.yaml)
