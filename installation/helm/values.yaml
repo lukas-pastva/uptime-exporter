@@ -8,7 +8,7 @@ pods:
     resources: 100
     ports:
       - name: http
-        port: 80
+        port: 9199
     serviceMonitorEnabled: true
     env:
       - name: PROMETHEUS_URL

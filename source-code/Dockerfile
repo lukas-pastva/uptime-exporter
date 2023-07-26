@@ -33,7 +33,7 @@ COPY --from=builder /uptime-exporter /usr/local/bin/uptime-exporter
 COPY ./source-code/bin /usr/local/bin
 RUN chmod -R +x /usr/local/bin
 
-EXPOSE 80
+EXPOSE 9199
 USER root
 
 RUN mkdir -p /var/log && touch /var/log/cron.log

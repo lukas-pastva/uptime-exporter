@@ -21,8 +21,8 @@ func main() {
 		fmt.Fprint(w, string(contents))
 	})
 
-	fmt.Println("Server is listening on port 80...")
-	if err := http.ListenAndServe(":80", nil); err != nil {
+	fmt.Println("Server is listening on port 9199...")
+	if err := http.ListenAndServe(":9199", nil); err != nil {
 		fmt.Println("Server failed to start:", err)
 	}
 }
