@@ -18,7 +18,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
     STEP=3600
     UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
     DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"hour-$i\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+    METRIC="uptime_exporter_per_last_24_hours{hour_in_past=\"$(date -d "@$END_TIME" '+%Y-%m-%d %H')\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -29,7 +29,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
     STEP=$((3600*24))
     UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
     DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"day-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+    METRIC="uptime_exporter_per_last_10_days{day_in_past=\"$(date -d "@$END_TIME" '+%Y-%m-%d')\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -40,7 +40,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
     STEP=$((3600*24*7))
     UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
     DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_10_weeks{week_in_past=\"week-$((10-$i))\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+    METRIC="uptime_exporter_per_last_10_weeks{week_in_past=\"week nr. $(date -d "@$END_TIME" '+%V')\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -51,7 +51,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
     STEP=$((3600*24*30))
     UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
     DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-    METRIC="uptime_exporter_per_last_12_months{month_in_past=\"month-$((12-$i))\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+    METRIC="uptime_exporter_per_last_12_months{month_in_past=\"$(date -d "@$END_TIME" '+%Y-%m')\",prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
     METRICS=$(echo -e "$METRICS\n$METRIC")
   done
 
@@ -64,7 +64,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*30))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_last_7_days{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_last_7_days{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in last 30 days
@@ -74,7 +74,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*30))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_last_30_days{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_last_30_days{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in previous month
@@ -84,7 +84,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*30))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_previous_month{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_previous_month{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in three months ago
@@ -94,7 +94,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*90))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_three_months_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_three_months_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in this year
@@ -104,7 +104,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*$(date +%j)))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_this_year{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_this_year{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in one year ago
@@ -114,7 +114,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*365))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_one_year_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_one_year_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
   # uptime in two years ago
@@ -124,7 +124,7 @@ for DEPLOYMENT in $DEPLOYMENTS; do
   STEP=$((3600*24*365))
   UPTIME_PERCENTAGE=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{namespace=\"$NAMESPACE\", deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
   DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
-  METRIC="uptime_exporter_in_two_years_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\"} ${UPTIME_PERCENTAGE}"
+  METRIC="uptime_exporter_in_two_years_ago{prometheus_job=\"${DEPLOYMENT}\", downtime_seconds=\"${DOWNTIME_SECONDS}\", namespace=\"$NAMESPACE\"} ${UPTIME_PERCENTAGE}"
   METRICS=$(echo -e "$METRICS\n$METRIC")
 
 done
