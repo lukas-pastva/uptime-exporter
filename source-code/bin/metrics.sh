@@ -3,7 +3,7 @@ export $(xargs -0 -a "/proc/1/environ") 2>/dev/null
 
 source functions.inc.sh
 
-export EPOCH=$(date +%s)
+EPOCH=$(date +%s)
 RESULT="uptime_exporter_heart_beat ${EPOCH}"
 RESULTS=$(echo -e "$RESULTS\n$RESULT")
 
@@ -194,5 +194,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
 
 
 done
+
+# metric for time taken to scrape
+RESULT="uptime_exporter_scrape_time $(($(date +%s)-EPOCH))"
+RESULTS=$(echo -e "$RESULTS\n$RESULT")
 
 echo -e "$RESULTS" > /tmp/metrics.log
