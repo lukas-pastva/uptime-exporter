@@ -21,4 +21,4 @@ calculate_downtime_seconds_from_percentage() {
 }
 
 export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
-export NAMESPACE=$(yq e '.config.namespace' /home/config.yaml)
+export NAMESPACES=$(yq e '.config.namespaces.[].name' /home/config.yaml)

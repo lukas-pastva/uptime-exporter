@@ -12,7 +12,8 @@ spec:
           value: |
             config:
               prometheus_url: "http://prometheus-operated.monitoring:9090"
-              namespace: "my-app"
+              namespaces: 
+                - name: "my-app"
               uptimes:
                 - start: 123456
                   duration: 1600

@@ -11,7 +11,14 @@ pods:
         port: 9199
     serviceMonitorEnabled: true
     env:
-      - name: PROMETHEUS_URL
-        value: "prometheus-operated.monitoring:9090"
-      - name: NAMESPACE
-        value: "my-app"
+      - name: CONFIG_FILE
+        value: |
+          config:
+            prometheus_url: "http://prometheus-operated.monitoring:9090"
+            namespaces:
+              - name: "my-app"
+            uptimes:
+              - start: 123456
+                duration: 1600
+              - start: 1234567
+                duration: 1600

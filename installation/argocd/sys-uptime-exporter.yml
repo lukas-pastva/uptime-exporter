@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://lukas-pastva.github.io/helm-chartie/
-      targetRevision: 0.1.48
+      targetRevision: 0.1.88
     chart: helm-chartie
     helm:
       values: |-
@@ -30,7 +30,8 @@ spec:
                 value: |
                   config:
                     prometheus_url: "http://prometheus-operated.monitoring:9090"
-                    namespace: "my-app"
+                    namespaces:
+                      - name: "my-app"
                     uptimes:
                       - start: 123456
                         duration: 1600
