@@ -18,7 +18,7 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
   # uptime in last 7 days
   UPTIME_PERCENTAGE_SUM=0
   END_TIME=$(date -u +%s)
-  STEP=$((3600*24*30))
+  STEP=$((3600*24*7))
   for ((i=0; i<$DEPLOYMENT_COUNT; i++)); do
     CLUSTER=$(yq e ".config.metrics[$m].deployments[$i].cluster" /home/config.yaml)
     NAMESPACE=$(yq e ".config.metrics[$m].deployments[$i].namespace" /home/config.yaml)
