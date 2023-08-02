@@ -5,6 +5,7 @@ function echo_message {
   echo -e "\n# $1"
 }
 
+# usage:  DOWNTIME_SECONDS=$(calculate_downtime_seconds_from_percentage "${UPTIME_PERCENTAGE}" "$((END_TIME-STEP))" "${END_TIME}")
 calculate_downtime_seconds_from_percentage() {
     UPTIME_PERCENTAGE=$1
     START_TIME=$2
@@ -21,4 +22,3 @@ calculate_downtime_seconds_from_percentage() {
 }
 
 export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
-export NAMESPACES=$(yq e '.config.namespaces.[].name' /home/config.yaml)

@@ -13,8 +13,12 @@ docker image rm ${IMAGE} || true
 docker run -e "NAMESPACE=my-app" -e "CONFIG_FILE=|
                                                       config:
                                                         prometheus_url: http://prometheus-operated.monitoring:9090
-                                                        namespaces:
-                                                          - name: my-app
+                                                        metrics:
+                                                          - name: test-metric
+                                                            deployments:
+                                                              - cluster: test-cluster
+                                                                namespace: test-namespace
+                                                                name: test-deployment
                                                         uptimes:
                                                           - start: 123456
                                                             duration: 1600
