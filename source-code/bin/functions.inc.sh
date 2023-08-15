@@ -47,7 +47,7 @@ calculate_uptime_percentage() {
       CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /home/config.yaml)
       INSTANCE=$(yq e ".config.metrics[$m].queries[$i].instance" /home/config.yaml)
 
-      UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=avg_over_time(cluster=\"$CLUSTER\",probe_success{instance=\"$INSTANCE\"}[1h]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+      UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=avg_over_time(probe_success{cluster=\"$CLUSTER\",instance=\"$INSTANCE\"}[1h]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
     fi
 
     UPTIME_PERCENTAGE_QUERY=$(echo "scale=5; $UPTIME_PERCENTAGE_QUERY" | bc)
