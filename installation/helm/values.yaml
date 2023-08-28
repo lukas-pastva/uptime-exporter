@@ -17,10 +17,15 @@ pods:
             prometheus_url: "http://prometheus-operated.monitoring:9090"
             metrics:
               - name: test-metric
-                deployments:
-                  - cluster: test-cluster
+                measureStart: "2023-08-28T18:53:46Z"
+                queries:
+                  - queryType: "kube_deployment_status_replicas"
+                    cluster: test-cluster
                     namespace: test-namespace
                     name: test-deployment
+                  - queryType: "probe_success"
+                    cluster: test-cluster
+                    instance: "https://google.com"
             uptimes:
               - start: 123456
                 duration: 1600
