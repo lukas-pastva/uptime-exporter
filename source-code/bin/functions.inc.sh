@@ -25,19 +25,29 @@ calculate_downtime_seconds_from_percentage() {
     echo "${DOWNTIME_SECONDS}"
 }
 
-# usage: UPTIME_PERCENTAGE_SUM=$(calculate_uptime_percentage "$m" "$i" "$UPTIME_PERCENTAGE_SUM" "$END_TIME" "$STEP")
+# usage: UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP")
 calculate_uptime_percentage() {
     m=$1
     i=$2
-    UPTIME_PERCENTAGE_SUM=$3
-    END_TIME=$4
-    STEP=$5
+    END_TIME=$3
+    STEP=$4
     START_TIME=$((END_TIME-STEP))
-    MEASURE_START_UNIX=$6
+    MEASURE_START_UNIX=$5
 
-    #if [ $MEASURE_START_UNIX -ge $START_TIME ] && [ $MEASURE_START_UNIX -le $END_TIME ]; then
+    # if we are in middle of measurement, we need to change the start time, eg change step
+    if [ $MEASURE_START_UNIX -ge $START_TIME ] && [ $MEASURE_START_UNIX -le $END_TIME ]; then
+      # calculating variables
+      NON_LIVE_TIME=$((MEASURE_START_UNIX-START_TIME))
+      PERCENTAGE_NON_LIVE=$(echo "scale=10;$NON_LIVE_TIME / $STEP * 100" | bc)
+      LIVE_TIME=$((END_TIME-MEASURE_START_UNIX))
+      PERCENTAGE_LIVE=$(echo "scale=10;$LIVE_TIME / $STEP * 100" | bc)
+
+      STEP=$((STEP-NON_LIVE_TIME))
+    fi
+
+    # if we are before live/measurementStart, needs to be 100%
     if [ $MEASURE_START_UNIX -ge $END_TIME ]; then
-        echo "100"
+      RESULT_PERCENTAGE="100"
     else
       QUERY_TYPE=$(yq e ".config.metrics[$m].queries[$i].queryType" /home/config.yaml)
 
@@ -56,10 +66,18 @@ calculate_uptime_percentage() {
         UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=avg_over_time(probe_success{cluster=\"$CLUSTER\",instance=\"$INSTANCE\"}[1h]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
       fi
 
-      UPTIME_PERCENTAGE_QUERY=$(echo "scale=5; $UPTIME_PERCENTAGE_QUERY" | bc)
-      UPTIME_PERCENTAGE_SUM=$(echo "$UPTIME_PERCENTAGE_SUM" + "$UPTIME_PERCENTAGE_QUERY" | bc)
-      echo "${UPTIME_PERCENTAGE_SUM}"
+      RESULT_PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_QUERY" | bc)
     fi
+
+    # if we are in middle of measurement, we need to add the percentage of uptime
+    if [ $MEASURE_START_UNIX -ge $START_TIME ] && [ $MEASURE_START_UNIX -le $END_TIME ]; then
+      # the RESULT_PERCENTAGE is corresponding only for the time after measurementStart
+      # we need to calculate that with regards to total PERCENTAGE_LIVE
+      RESULT_PERCENTAGE_LIVE=$(echo "scale=10;$RESULT_PERCENTAGE * $PERCENTAGE_LIVE / 100" | bc)
+      RESULT_PERCENTAGE=$(echo "scale=5;$RESULT_PERCENTAGE_LIVE + $PERCENTAGE_NON_LIVE" | bc)
+    fi
+
+    echo $RESULT_PERCENTAGE
 }
 
 EPOCH=$(date +%s)
