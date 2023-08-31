@@ -31,22 +31,22 @@ calculate_uptime_percentage() {
     i=$2
     END_TIME=$3
     STEP=$4
+    MEASURE_START=$5
     START_TIME=$((END_TIME-STEP))
-    MEASURE_START_UNIX=$5
 
     # if we are in middle of measurement, we need to change the start time, eg change step
-    if [ $MEASURE_START_UNIX -ge $START_TIME ] && [ $MEASURE_START_UNIX -le $END_TIME ]; then
+    if [ $MEASURE_START -ge $START_TIME ] && [ $MEASURE_START -le $END_TIME ]; then
       # calculating variables
-      NON_LIVE_TIME=$((MEASURE_START_UNIX-START_TIME))
+      NON_LIVE_TIME=$((MEASURE_START-START_TIME))
       PERCENTAGE_NON_LIVE=$(echo "scale=10;$NON_LIVE_TIME / $STEP * 100" | bc)
-      LIVE_TIME=$((END_TIME-MEASURE_START_UNIX))
+      LIVE_TIME=$((END_TIME-MEASURE_START))
       PERCENTAGE_LIVE=$(echo "scale=10;$LIVE_TIME / $STEP * 100" | bc)
 
       STEP=$((STEP-NON_LIVE_TIME))
     fi
 
     # if we are before live/measurementStart, needs to be 100%
-    if [ $MEASURE_START_UNIX -ge $END_TIME ]; then
+    if [ $MEASURE_START -ge $END_TIME ]; then
       RESULT_PERCENTAGE="100"
     else
       QUERY_TYPE=$(yq e ".config.metrics[$m].queries[$i].queryType" /home/config.yaml)
@@ -56,6 +56,8 @@ calculate_uptime_percentage() {
         NAMESPACE=$(yq e ".config.metrics[$m].queries[$i].namespace" /home/config.yaml)
         DEPLOYMENT=$(yq e ".config.metrics[$m].queries[$i].name" /home/config.yaml)
 
+        # old: kube_deployment_status_replicas_updated
+        # new: kube_deployment_spec_replicas
         UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{cluster=\"$CLUSTER\",namespace=\"$NAMESPACE\",deployment=\"$DEPLOYMENT\"}[60s])) / sum(sum_over_time(kube_deployment_status_replicas{cluster=\"$CLUSTER\",namespace=\"$NAMESPACE\",deployment=\"$DEPLOYMENT\"}[60s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
       fi
 
@@ -70,11 +72,15 @@ calculate_uptime_percentage() {
     fi
 
     # if we are in middle of measurement, we need to add the percentage of uptime
-    if [ $MEASURE_START_UNIX -ge $START_TIME ] && [ $MEASURE_START_UNIX -le $END_TIME ]; then
+    if [ $MEASURE_START -ge $START_TIME ] && [ $MEASURE_START -le $END_TIME ]; then
+      #echo "RESULT_PERCENTAGE: $RESULT_PERCENTAGE" >> log.txt
       # the RESULT_PERCENTAGE is corresponding only for the time after measurementStart
-      # we need to calculate that with regards to total PERCENTAGE_LIVE
       RESULT_PERCENTAGE_LIVE=$(echo "scale=10;$RESULT_PERCENTAGE * $PERCENTAGE_LIVE / 100" | bc)
       RESULT_PERCENTAGE=$(echo "scale=5;$RESULT_PERCENTAGE_LIVE + $PERCENTAGE_NON_LIVE" | bc)
+
+      #echo "RESULT_PERCENTAGE_LIVE: $RESULT_PERCENTAGE_LIVE" >> log.txt
+      #echo "RESULT_PERCENTAGE_NEW: $RESULT_PERCENTAGE" >> log.txt
+      #echo "PERCENTAGE_LIVE: $PERCENTAGE_LIVE" >> log.txt
     fi
 
     echo $RESULT_PERCENTAGE

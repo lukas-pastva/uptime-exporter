@@ -70,7 +70,7 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
-  RESULT="uptime_exporter_in_this_year{metric=\"${METRIC}\"} $(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)"
+  RESULT="uptime_exporter_in_this_calendar_year{metric=\"${METRIC}\"} $(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
 
   # uptime in one year ago
@@ -81,7 +81,7 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
-  RESULT="uptime_exporter_in_one_year_ago{metric=\"${METRIC}\"} $(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)"
+  RESULT="uptime_exporter_in_last_365_days{metric=\"${METRIC}\"} $(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
 
   # uptime in two years ago
@@ -150,7 +150,6 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     RESULT="uptime_exporter_per_last_24_hours{hour_in_past=\"$(date -d "@$END_TIME" '+%Y-%m-%d %H')\", metric=\"${METRIC}\"} $(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)"
     RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
   done
-
 
 done
 
