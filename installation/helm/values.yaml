@@ -1,9 +1,5 @@
-name: sys-uptime-exporter
-namespace: sys-uptime-exporter
-type: DaemonSet
-
 pods:
-  - name: sys-uptime-exporter
+  sys-uptime-exporter:
     repo: lukaspastva/uptime-exporter:latest
     resources: 100
     ports:

@@ -10,17 +10,14 @@ spec:
   project: default
   source:
     repoURL: https://lukas-pastva.github.io/helm-chartie/
-      targetRevision: 0.1.101
+      targetRevision: 0.2.5
     chart: helm-chartie
     helm:
       values: |-
-        namespace: sys-uptime-exporter
-        type: DaemonSet
-        
         pods:
-          - name: sys-uptime-exporter
+          sys-uptime-exporter:
             repo: lukaspastva/uptime-exporter:latest
-            resources: 100
+            simpleResources: 100
             ports:
               - name: http
                 port: 9199
