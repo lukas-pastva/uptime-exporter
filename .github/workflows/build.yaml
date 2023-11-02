@@ -18,7 +18,7 @@ jobs:
 
       - name: build
         run: |
-          VERSION="0.1.27"
+          VERSION="0.1.28"
           docker login registry.hub.docker.com -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
           docker build -f ./source-code/Dockerfile -t registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest .
           docker tag registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${VERSION}

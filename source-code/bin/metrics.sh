@@ -27,9 +27,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_last_7_days $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_last_7_days{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -43,9 +43,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_last_30_days $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_last_30_days{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -59,9 +59,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_previous_month $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_previous_month{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -75,9 +75,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_three_months_ago $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_three_months_ago{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -91,9 +91,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_this_calendar_year $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_this_calendar_year{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -107,9 +107,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_last_365_days $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_last_365_days{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -123,9 +123,9 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
   done
   PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-  if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+  if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
       echo "Percentage was over: $PERCENTAGE in uptime_exporter_in_two_years_ago $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-      PERCENTAGE=100
+      export PERCENTAGE=100
   fi
   RESULT="uptime_exporter_in_two_years_ago{metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
   RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -139,13 +139,13 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     END_TIME=$(date -d"$j month ago $(date +%T)" +%s)
     STEP=$((3600*24*30))
     for ((i=0; i<$QUERY_COUNT; i++)); do
-    UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
-    UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
+      UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
+      UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
     done
     PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-    if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+    if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
         echo "Percentage was over: $PERCENTAGE in uptime_exporter_per_last_12_months $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-        PERCENTAGE=100
+        export PERCENTAGE=100
     fi
     RESULT="uptime_exporter_per_last_12_months{month_in_past=\"$(date -d "@$END_TIME" '+%Y-%m')\", metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
     RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -157,13 +157,13 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     END_TIME=$(date -d"$j week ago $(date +%T)" +%s)
     STEP=$((3600*24*7))
     for ((i=0; i<$QUERY_COUNT; i++)); do
-    UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
-    UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
+      UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
+      UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
     done
     PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-    if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+    if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
         echo "Percentage was over: $PERCENTAGE in uptime_exporter_per_last_4_weeks $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-        PERCENTAGE=100
+        export PERCENTAGE=100
     fi
     RESULT="uptime_exporter_per_last_4_weeks{week_in_past=\"week nr. $(date -d "@$END_TIME" '+%V')\", metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
     RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -175,13 +175,13 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     END_TIME=$(date -d"$j day ago $(date +%T)" +%s)
     STEP=$((3600*24))
     for ((i=0; i<$QUERY_COUNT; i++)); do
-    UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
-    UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
+      UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
+      UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
     done
     PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-    if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+    if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
         echo "Percentage was over: $PERCENTAGE in uptime_exporter_per_last_7_days $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-        PERCENTAGE=100
+        export PERCENTAGE=100
     fi
     RESULT="uptime_exporter_per_last_7_days{day_in_past=\"$(date -d "@$END_TIME" '+%Y-%m-%d')\", metric=\"${METRIC}\"} $(echo "scale=5; $PERCENTAGE" | bc)"
     RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
@@ -193,13 +193,13 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
     END_TIME=$(date -d "-$j hours" +%s)
     STEP=3600
     for ((i=0; i<$QUERY_COUNT; i++)); do
-    UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
-    UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
+      UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
+      UPTIME_PERCENTAGE_SUM=$(echo "scale=5;$UPTIME_PERCENTAGE_SUM + $UPTIME_PERCENTAGE_CURRENT" | bc)
     done
     PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_SUM/$i" | bc)
-    if (( $(echo "$PERCENTAGE > 100" | bc -l) )); then
+    if (( $(echo "scale=10; $PERCENTAGE > 100" | bc) )); then
         echo "Percentage was over: $PERCENTAGE in uptime_exporter_per_last_24_hours $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> error.log
-        PERCENTAGE=100
+        export PERCENTAGE=100
     fi
     RESULT="uptime_exporter_per_last_24_hours{hour_in_past=\"$(date -d "@$END_TIME" '+%Y-%m-%d %H')\", metric=\"${METRIC}\"} $PERCENTAGE"
     RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
