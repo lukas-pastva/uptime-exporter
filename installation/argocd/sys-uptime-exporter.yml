@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://lukas-pastva.github.io/helm-chartie/
-      targetRevision: 0.2.5
+      targetRevision: 0.2.7
     chart: helm-chartie
     helm:
       values: |-
