@@ -22,7 +22,3 @@ fi
 # Start cron in the foreground without using the service command
 # It's important to start cron in a way that is compatible with a read-only root filesystem
 cron -f -L 15 &
-
-# Tail the cron log (if necessary)
-# Make sure /var/log is writable (mounted as a volume or emptyDir in your Kubernetes configuration)
-tail -f /var/log/cron.log
