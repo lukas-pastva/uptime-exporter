@@ -5,7 +5,31 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
+	"sync"
 )
+
+var (
+	scriptRunning bool
+	scriptMutex   sync.Mutex
+)
+
+func executeScript() {
+	scriptMutex.Lock()
+	defer scriptMutex.Unlock()
+
+	if scriptRunning {
+		fmt.Println("Script is already running.")
+		return
+	}
+
+	scriptRunning = true
+	defer func() { scriptRunning = false }()
+
+	err := exec.Command("/bin/bash", "/usr/local/bin/metrics.sh").Run()
+	if err != nil {
+		fmt.Println("Error executing script:", err)
+	}
+}
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -21,13 +45,8 @@ func main() {
 		// Write the contents of the file to the response
 		fmt.Fprint(w, string(contents))
 
-		// Execute the bash script asynchronously
-		go func() {
-			err := exec.Command("/bin/bash", "/usr/local/bin/metrics.sh").Run()
-			if err != nil {
-				fmt.Println("Error executing script:", err)
-			}
-		}()
+		// Execute the bash script asynchronously, if not already running
+		go executeScript()
 	})
 
 	fmt.Println("Server is listening on port 9199...")
