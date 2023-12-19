@@ -18,7 +18,7 @@ jobs:
 
       - name: Set Version
         id: version
-        run: echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
+        run: echo "VERSION=$(git describe --tags | cut -d'-' -f1)" >> $GITHUB_ENV
 
       - name: build
         run: |
