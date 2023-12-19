@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 )
 
 func main() {
@@ -19,6 +20,14 @@ func main() {
 
 		// Write the contents of the file to the response
 		fmt.Fprint(w, string(contents))
+
+		// Execute the bash script asynchronously
+		go func() {
+			err := exec.Command("/bin/bash", "/usr/local/bin/metrics.sh").Run()
+			if err != nil {
+				fmt.Println("Error executing script:", err)
+			}
+		}()
 	})
 
 	fmt.Println("Server is listening on port 9199...")

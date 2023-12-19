@@ -13,10 +13,7 @@ RUN apt-get update -qq && \
     apt-transport-https \
     bc \
     ca-certificates \
-    cron \
     curl \
-    containerd \
-    docker.io \
     jq \
     vim \
     libzip-dev \
@@ -37,8 +34,6 @@ EXPOSE 9199
 RUN useradd -ms /bin/bash nonrootuser
 
 USER root
-
-RUN (crontab -l ; echo "*/15 * * * * /usr/local/bin/metrics.sh >/dev/null") | crontab
 
 USER nonrootuser
 
