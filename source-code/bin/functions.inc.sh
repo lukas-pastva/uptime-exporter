@@ -94,14 +94,14 @@ calculate_uptime_percentage() {
 
     # if we are in middle of measurement, we need to add the percentage of uptime
     if [ $MEASURE_START -ge $START_TIME ] && [ $MEASURE_START -le $END_TIME ]; then
-      #echo "RESULT_PERCENTAGE: $RESULT_PERCENTAGE" >> log.txt
+      #echo "RESULT_PERCENTAGE: $RESULT_PERCENTAGE" >> /tmp/log.txt
       # the RESULT_PERCENTAGE is corresponding only for the time after measurementStart
       RESULT_PERCENTAGE_LIVE=$(echo "scale=10;$RESULT_PERCENTAGE * $PERCENTAGE_LIVE / 100" | bc)
       RESULT_PERCENTAGE=$(echo "scale=5;$RESULT_PERCENTAGE_LIVE + $PERCENTAGE_NON_LIVE" | bc)
 
-      #echo "RESULT_PERCENTAGE_LIVE: $RESULT_PERCENTAGE_LIVE" >> log.txt
-      #echo "RESULT_PERCENTAGE_NEW: $RESULT_PERCENTAGE" >> log.txt
-      #echo "PERCENTAGE_LIVE: $PERCENTAGE_LIVE" >> log.txt
+      #echo "RESULT_PERCENTAGE_LIVE: $RESULT_PERCENTAGE_LIVE" >> /tmp/log.txt
+      #echo "RESULT_PERCENTAGE_NEW: $RESULT_PERCENTAGE" >> /tmp/log.txt
+      #echo "PERCENTAGE_LIVE: $PERCENTAGE_LIVE" >> /tmp/log.txt
     fi
 
     echo $RESULT_PERCENTAGE

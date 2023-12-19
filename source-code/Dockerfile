@@ -35,12 +35,6 @@ RUN chmod -R +x /usr/local/bin
 
 EXPOSE 9199
 RUN useradd -ms /bin/bash nonrootuser
-USER root
-
-RUN mkdir -p /var/log && \
-    touch /var/log/cron.log && \
-    echo "uptime_exporter_heart_beat $(date +%s)" > /tmp/metrics.log && \
-    chown -R nonrootuser:nonrootuser /var/log /tmp
 
 RUN (crontab -l ; echo "*/15 * * * * /usr/local/bin/metrics.sh >/dev/null") | crontab
 
