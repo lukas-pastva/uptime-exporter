@@ -12,7 +12,7 @@ echo ""
 
 # in case config is via variable
 if [ "${CONFIG_FILE}" != "" ]; then
-    echo "${CONFIG_FILE}" > /home/config.yaml
+    echo "${CONFIG_FILE}" > /tmp/config.yaml
     export CONFIG_FILE=""
 fi
 

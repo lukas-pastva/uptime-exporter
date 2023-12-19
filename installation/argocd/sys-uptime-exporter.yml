@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://lukas-pastva.github.io/helm-chartie/
-      targetRevision: 0.2.7
+    targetRevision: 0.2.21
     chart: helm-chartie
     helm:
       values: |-
@@ -39,10 +39,8 @@ spec:
                             cluster: test-cluster
                             instance: "https://google.com"
                     uptimes:
-                      - start: 123456
-                        duration: 1600
-                      - start: 1234567
-                        duration: 1600
+                      - start: "2023-11-16T8:00:00Z"
+                        end: "2023-11-28T8:00:00Z"
 
   destination:
     server: "https://kubernetes.default.svc"

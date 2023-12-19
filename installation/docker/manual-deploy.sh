@@ -20,7 +20,5 @@ config:
           namespace: test-namespace
           name: test-deployment
   uptimes:
-    - start: 123456
-      duration: 1600
-    - start: 1234567
-      duration: 1600" --name uptime-exporter ${IMAGE} .
+    - start: \"2023-11-16T8:00:00Z\"
+      end: \"2023-11-28T8:00:00Z\"" --name uptime-exporter ${IMAGE} .

@@ -9,12 +9,12 @@ RESULTS="uptime_exporter_heart_beat ${EPOCH}"
 RESULTS=$(metric_add "${RESULT}" "${RESULTS}")
 
 # iterate over metrics
-METRICS_COUNT=$(yq e '.config.metrics | length' /home/config.yaml)
+METRICS_COUNT=$(yq e '.config.metrics | length' /tmp/config.yaml)
 for ((m=0; m<$METRICS_COUNT; m++)); do
-  METRIC=$(yq e ".config.metrics[$m].name" /home/config.yaml)
-  MEASURE_START=$(yq e ".config.metrics[$m].measureStart" /home/config.yaml)
+  METRIC=$(yq e ".config.metrics[$m].name" /tmp/config.yaml)
+  MEASURE_START=$(yq e ".config.metrics[$m].measureStart" /tmp/config.yaml)
   MEASURE_START_UNIX=$(date -d "$MEASURE_START" +%s)
-  QUERY_COUNT=$(yq e ".config.metrics[$m].queries | length" /home/config.yaml)
+  QUERY_COUNT=$(yq e ".config.metrics[$m].queries | length" /tmp/config.yaml)
 
 
   # IN last XXX

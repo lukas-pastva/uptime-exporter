@@ -2,6 +2,9 @@
 #set -e
 
 
+## DEBUGGING in prometheus
+#sum(sum_over_time(kube_deployment_status_replicas_updated{deployment="$DEPLOYMENT"}[30s])) / sum(sum_over_time(kube_deployment_status_replicas{deployment="$DEPLOYMENT"}[30s])) or on() vector(0)
+
 ## DEBUGGING probe_success
 #export PROMETHEUS_URL="http://thanos-query.monitoring:9090"
 #export STEP=$((3600))
@@ -67,12 +70,12 @@ calculate_uptime_percentage() {
     if [ $MEASURE_START -ge $END_TIME ]; then
       RESULT_PERCENTAGE="100"
     else
-      QUERY_TYPE=$(yq e ".config.metrics[$m].queries[$i].queryType" /home/config.yaml)
+      QUERY_TYPE=$(yq e ".config.metrics[$m].queries[$i].queryType" /tmp/config.yaml)
 
       if [ "${QUERY_TYPE}" == "kube_deployment_status_replicas" ]; then
-        CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /home/config.yaml)
-        NAMESPACE=$(yq e ".config.metrics[$m].queries[$i].namespace" /home/config.yaml)
-        DEPLOYMENT=$(yq e ".config.metrics[$m].queries[$i].name" /home/config.yaml)
+        CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /tmp/config.yaml)
+        NAMESPACE=$(yq e ".config.metrics[$m].queries[$i].namespace" /tmp/config.yaml)
+        DEPLOYMENT=$(yq e ".config.metrics[$m].queries[$i].name" /tmp/config.yaml)
 
         # old: kube_deployment_status_replicas_updated
         # new: kube_deployment_spec_replicas
@@ -80,12 +83,12 @@ calculate_uptime_percentage() {
       fi
 
       if [ "${QUERY_TYPE}" == "probe_success" ]; then
-        CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /home/config.yaml)
-        INSTANCE=$(yq e ".config.metrics[$m].queries[$i].instance" /home/config.yaml)
+        CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /tmp/config.yaml)
+        INSTANCE=$(yq e ".config.metrics[$m].queries[$i].instance" /tmp/config.yaml)
 
         UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=avg_over_time(probe_success{cluster=\"$CLUSTER\",instance=\"$INSTANCE\"}[${STEP}s]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
       fi
-z
+
       RESULT_PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_QUERY" | bc)
     fi
 
@@ -105,4 +108,4 @@ z
 }
 
 EPOCH=$(date +%s)
-export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /home/config.yaml)
+export PROMETHEUS_URL=$(yq e '.config.prometheus_url' /tmp/config.yaml)
