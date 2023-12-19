@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"sync"
+	"time"
 )
 
 var (
@@ -31,8 +33,23 @@ func executeScript() {
 	}
 }
 
+func ensureLogFileExists() {
+	filePath := "/tmp/metrics.log"
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		// File does not exist, create it
+		currentTime := time.Now().Unix()
+		content := fmt.Sprintf("uptime_exporter_heart_beat %d\n", currentTime)
+		err := os.WriteFile(filePath, []byte(content), 0644)
+		if err != nil {
+			fmt.Println("Error creating file:", err)
+		}
+	}
+}
+
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		ensureLogFileExists()
+
 		// Read the contents of the file
 		contents, err := ioutil.ReadFile("/tmp/metrics.log")
 		if err != nil {
