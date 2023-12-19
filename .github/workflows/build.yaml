@@ -16,11 +16,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
+      - name: Set Version
+        id: version
+        run: echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
+
       - name: build
         run: |
-          VERSION="0.1.29"
           docker login registry.hub.docker.com -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
           docker build -f ./source-code/Dockerfile -t registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest .
-          docker tag registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${VERSION}
+          docker tag registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${{ env.VERSION }}
           docker push registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:latest
-          docker push registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${VERSION}
+          docker push registry.hub.docker.com/lukaspastva/${{ github.event.repository.name }}:${{ env.VERSION }}
