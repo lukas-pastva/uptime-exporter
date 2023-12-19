@@ -35,7 +35,7 @@ RUN chmod -R +x /usr/local/bin
 
 EXPOSE 9199
 RUN useradd -ms /bin/bash nonrootuser
-USER nonrootuser
+USER root
 
 RUN mkdir -p /var/log && \
     touch /var/log/cron.log && \
@@ -43,5 +43,7 @@ RUN mkdir -p /var/log && \
     chown -R nonrootuser:nonrootuser /var/log /tmp
 
 RUN (crontab -l ; echo "*/15 * * * * /usr/local/bin/metrics.sh >/dev/null") | crontab
+
+USER nonrootuser
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
