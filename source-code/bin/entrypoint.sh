@@ -21,4 +21,4 @@ fi
 
 # Start cron in the foreground without using the service command
 # It's important to start cron in a way that is compatible with a read-only root filesystem
-cron -f -L 15 &
+cron -f -L 15
