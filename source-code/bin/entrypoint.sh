@@ -16,5 +16,5 @@ if [ "${CONFIG_FILE}" != "" ]; then
     export CONFIG_FILE=""
 fi
 
-# Start uptime-exporter in the background
+# Start uptime-exporter
 /usr/local/bin/uptime-exporter
