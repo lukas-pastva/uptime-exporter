@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://lukas-pastva.github.io/helm-chartie/
-    targetRevision: 0.2.21
+    targetRevision: 0.2.26
     chart: helm-chartie
     helm:
       values: |-
@@ -18,10 +18,12 @@ spec:
           sys-uptime-exporter:
             repo: lukaspastva/uptime-exporter:latest
             simpleResources: 100
+            # TODO podSecurityContextRestricted: true
             ports:
               - name: http
                 port: 9199
-            serviceMonitorEnabled: true
+            serviceMonitor:
+              enabled: true
             envs:
               - name: CONFIG_FILE
                 value: |
