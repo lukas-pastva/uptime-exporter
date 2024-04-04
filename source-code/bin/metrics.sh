@@ -87,7 +87,8 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
   END_TIME=$(date -u +%s)
 
   # STEP=$((3600*24*$(date +%j)))
-  STEP=$((3600*24*${$(date +%j)#0})) # fixed /usr/local/bin/metrics.sh: line 88: 3600*24*094: value too great for base (error token is "0xx")
+  DAY_OF_YEAR=$(date +%j | sed 's/^0*//')
+  STEP=$((3600*24*DAY_OF_YEAR))
 
   for ((i=0; i<$QUERY_COUNT; i++)); do
     UPTIME_PERCENTAGE_CURRENT=$(calculate_uptime_percentage "$m" "$i" "$END_TIME" "$STEP" "$MEASURE_START_UNIX")
