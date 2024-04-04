@@ -86,7 +86,6 @@ for ((m=0; m<$METRICS_COUNT; m++)); do
   UPTIME_PERCENTAGE_SUM=0
   END_TIME=$(date -u +%s)
 
-  # STEP=$((3600*24*$(date +%j)))
   DAY_OF_YEAR=$(date +%j | sed 's/^0*//')
   STEP=$((3600*24*DAY_OF_YEAR))
 
