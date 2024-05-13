@@ -23,6 +23,9 @@ pods:
                   - queryType: "probe_success"
                     cluster: test-cluster
                     instance: "https://google.com"
+                  - queryType: "s3_5xx_error_rate"
+                    bucket_name: bucket-asdf
+
             uptimes:
               - start: "2023-11-16T8:00:00Z"
                 end: "2023-11-28T8:00:00Z"

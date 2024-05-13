@@ -6,21 +6,29 @@
 #sum(sum_over_time(kube_deployment_status_replicas_updated{deployment="$DEPLOYMENT"}[30s])) / sum(sum_over_time(kube_deployment_status_replicas{deployment="$DEPLOYMENT"}[30s])) or on() vector(0)
 
 ## DEBUGGING probe_success
-#export PROMETHEUS_URL="http://thanos-query.monitoring:9090"
+#export PROMETHEUS_URL="http://localhost:10902"
 #export STEP=$((3600))
 #export END_TIME=$(date -d"0 day ago $(date +%T)" +%s)
-#export CLUSTER="dip-prod-eks-1"
-#export INSTANCE="http://uni-resolver.universal-resolver.svc.cluster.local/1.0/identifiers/did:web:www.iata.org"
+#export CLUSTER="cluster-1"
+#export INSTANCE="http://google.com"
 #curl -s -G --data-urlencode "query=avg_over_time(probe_success{cluster=\"$CLUSTER\",instance=\"$INSTANCE\"}[${STEP}s]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100'
 
 ## DEBUGGING probe_success
-#export PROMETHEUS_URL="http://thanos-query.monitoring:9090"
+#export PROMETHEUS_URL="http://localhost:10902"
 #export STEP=$((3600*24*7))
 #export END_TIME=$(date -u +%s)
-#export CLUSTER="dip-prod-eks-1"
-#export NAMESPACE="iata-prod"
-#export DEPLOYMENT="edison-credentials-api"
+#export CLUSTER="cluster-1"
+#export NAMESPACE="prod"
+#export DEPLOYMENT="my-app"
 #curl -s -G --data-urlencode "query=sum(sum_over_time(kube_deployment_status_replicas_updated{cluster=\"$CLUSTER\",namespace=\"$NAMESPACE\",deployment=\"$DEPLOYMENT\"}[${STEP}s])) / sum(sum_over_time(kube_deployment_status_replicas{cluster=\"$CLUSTER\",namespace=\"$NAMESPACE\",deployment=\"$DEPLOYMENT\"}[${STEP}s])) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100'
+
+## DEBUGGING 5xx_error_rate
+# export PROMETHEUS_URL="http://localhost:10902"
+# export STEP=$((3600*24*7))
+# export END_TIME=$(date -u +%s)
+# export CLUSTER="cluster-1"
+# export BUCKET_NAME="my-bucket"
+# curl -s -G --data-urlencode "query=clamp_min((1 - aws_s3_5xx_errors_sum{cluster=\"$CLUSTER\",bucket_name=\"$BUCKET_NAME\"} / aws_s3_all_requests_sum{cluster=\"$CLUSTER\",bucket_name=\"$BUCKET_NAME\"}) or on() vector(1), 0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100'
 
 function echo_message {
   echo -e "\n# $1"
@@ -87,6 +95,14 @@ calculate_uptime_percentage() {
         INSTANCE=$(yq e ".config.metrics[$m].queries[$i].instance" /tmp/config.yaml)
 
         UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=avg_over_time(probe_success{cluster=\"$CLUSTER\",instance=\"$INSTANCE\"}[${STEP}s]) or on() vector(0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
+      fi
+
+      if [ "${QUERY_TYPE}" == "s3_5xx_error_rate" ]; then
+        CLUSTER=$(yq e ".config.metrics[$m].queries[$i].cluster" /tmp/config.yaml)
+        BUCKET_NAME=$(yq e ".config.metrics[$m].queries[$i].bucket_name" /tmp/config.yaml)
+        # query 1: clamp_min(100 * (1 - aws_s3_5xx_errors_sum{bucket_name="${BUCKET_NAME}"} / aws_s3_all_requests_sum{bucket_name="${BUCKET_NAME}"}) or on() vector(100), 0)
+        # query 2: clamp_min(100 * (1 - rate(aws_s3_5xx_errors_sum{bucket_name="${BUCKET_NAME}"}[5m]) / rate(aws_s3_all_requests_sum{bucket_name="${BUCKET_NAME}"}[5m])), 0)
+        UPTIME_PERCENTAGE_QUERY=$(curl -s -G --data-urlencode "query=clamp_min(100 * (1 - aws_s3_5xx_errors_sum{cluster=\"$CLUSTER\",bucket_name=\"$BUCKET_NAME\"} / aws_s3_all_requests_sum{cluster=\"$CLUSTER\",bucket_name=\"$BUCKET_NAME\"}) or on() vector(100), 0)" --data-urlencode "start=$((END_TIME-60)).2288918" --data-urlencode "end=$END_TIME.2288918" --data-urlencode "step=$STEP" "$PROMETHEUS_URL/api/v1/query_range" | jq -r '.data.result[].values[]' | jq -s 'map(.[1] | tonumber) | (add / length) * 100')
       fi
 
       RESULT_PERCENTAGE=$(echo "scale=5; $UPTIME_PERCENTAGE_QUERY" | bc)
