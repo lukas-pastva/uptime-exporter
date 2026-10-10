@@ -1,10 +1,10 @@
-FROM golang:1.16-buster AS builder
+FROM golang:1.22-bookworm AS builder
 WORKDIR /app
 COPY ./source-code/go.* ./
 RUN go mod download
 COPY ./source-code/*.go ./
 RUN go build -o /uptime-exporter
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 WORKDIR /usr/local/bin
 
